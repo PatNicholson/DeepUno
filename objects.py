@@ -61,8 +61,12 @@ class Player:
         self.game.discard_pile.add(card)
         return card
 
+    """ 0 if discard, 1 if draw"""
     def discard_or_draw(self):
         raise NotImplementedError("discard_or_draw not implemented")
+
+    def play(self):
+        raise NotImplementedError("play not implemented")
 
     def possible_card(self):
         for card in self.hand.cards:
@@ -73,6 +77,17 @@ class Player:
             if card.color == self.game.recent_played_card.color:
                 return True
         return False
+
+    def all_possible_cards(self):
+        all_possible_cards = Deck(0)
+        for card in self.hand.cards:
+            if card.flag > 0:
+                all_possible_cards.add(card)
+            elif card.value == self.game.recent_played_card.value:
+                all_possible_cards.add(card)
+            elif card.color == self.game.recent_played_card.color:
+                all_possible_cards.add(card)
+        return all_possible_cards
 
 
 """ Represents an UNO card.
