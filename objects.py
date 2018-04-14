@@ -64,6 +64,16 @@ class Player:
     def discard_or_draw(self):
         raise NotImplementedError("discard_or_draw not implemented")
 
+    def possible_card(self):
+        for card in self.hand.cards:
+            if card.flag > 0:
+                return True
+            if card.value == self.game.recent_played_card.value:
+                return True
+            if card.color == self.game.recent_played_card.color:
+                return True
+        return False
+
 
 """ Represents an UNO card.
 value: numerical value of a regular (non-special or non-wild) card
