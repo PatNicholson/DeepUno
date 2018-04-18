@@ -1,36 +1,13 @@
 import wx, os, random, time, random
 
+#NOTE: this currently just shows how the game will look, but is not attached to an actual
+#game state yet (i.e. doesn't use an instance of UNO_Game yet)
 class UnoGame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, title='Uno')
         self.SetSize((900,700))
         self.Move((50,25))
         self.panel1 = wx.Panel(self)
-        
-        
-        #define how big game is...can be useful for making skill options later
-        #self.numPairs = 12
-        
-     
-        #get all images in directory called "Images" & shuffle order
-        #self.imageArray = GetJpgList("./Images")
-        #random.shuffle(self.imageArray)
-        
-        #create array with how many cards needed and double it to make matched pairs        
-        #self.imagePairs = self.imageArray[0:self.numPairs]
-        #self.imagePairs = self.imagePairs * 2
-
-        #because we doubled, we need to re-shuffle order
-        #random.shuffle(self.imagePairs)
-        
-        #PRINT KEY TO TERMINAL SO YOU CAN QUICKLY SOLVE
-#         countrow=0
-#         for card in self.imagePairs:
-#             countrow +=1
-#             if countrow%6 == 0:
-#                 print card
-#             else:
-#                 print card,
         
         #replace later with randomly generated first hand & top card
         p1hand = ['blue_0','green_2','green_3','green_5','red_8','black_wildcard','blue_reverse']
@@ -200,13 +177,6 @@ class UnoGame(wx.Frame):
             self.P2Cards[i].Hide()
         self.Show()
 
-##get all JPEGs in a directory that is passed and return image names array
-##Note I found this code snippet here:   http://wiki.wxpython.org/wxStaticBitmap
-#def GetJpgList(loc):
-#    jpgs = [f for f in os.listdir(loc) if f[-4:] == ".jpg"]
-#    #print "JPGS are:", jpgs
-#    return [os.path.join(loc, f) for f in jpgs]
-      
     
 if __name__ == '__main__':
     app = wx.App(False)
