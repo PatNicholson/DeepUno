@@ -149,22 +149,6 @@ class UnoGame(wx.Frame):
         popup.SetPosition(wx.Point(pos[0]+0.5*sz2[0]-0.5*psz[0],pos[1]+0.15*sz2[1]))
         popup.Popup()
         
-    def dialog_popup_win(self,msg):
-        popup = wx.PopupTransientWindow(self,wx.SIMPLE_BORDER)
-        popup.SetBackgroundColour(wx.WHITE)
-        text = wx.StaticText(popup, label=msg)
-        text.SetFont(wx.Font(18, wx.ROMAN, wx.NORMAL, wx.BOLD))
-        sz = text.GetBestSize()
-        dlg = wx.TextEntryDialog(parent, message, defaultValue=default_value)
-        dlg.ShowModal()
-        result = dlg.GetValue()
-        popup.SetSize( (sz.width, sz.height))
-        pos = self.ClientToScreen( (0,0) )
-        sz2 =  self.GetSize()
-        psz = popup.GetSize()
-        popup.SetPosition(wx.Point(pos[0]+0.5*sz2[0]-0.5*psz[0],pos[1]+0.15*sz2[1]))
-        popup.Popup()
-        
     def draw_helper(self,card_drawn):
         drawn_card = name_from_card(card_drawn)
         card_png = './images/'+drawn_card+'.png'
@@ -187,7 +171,6 @@ class UnoGame(wx.Frame):
         self.opp_play()
     
     def play(self, event):
-        
         #get card clicked on, hide corresponding card image
         newCard = event.GetEventObject()
         card_played = card_from_name(newCard.GetName())
@@ -219,9 +202,19 @@ class UnoGame(wx.Frame):
                 self.P2HandSize += 2
             elif card_played.flag == 4: #wild card (change later to add color selection)
                 self.game.wild_color = 'blue'
+                dlg = wx.TextEntryDialog(self, 'Which color is the wildcard?')
+                dlg.ShowModal()
+                tmp = dlg.GetValue()
+                if tmp in ["red", "blue", "green", "yellow"]:
+                    self.game.wild_color = tmp
                 print('wildcard color choice is',self.game.wild_color)
             elif card_played.flag == 5: #wild draw 4 (change later to add color selection)
                 self.game.wild_color = 'blue'
+                dlg = wx.TextEntryDialog(self, 'Which color is the wildcard?')
+                dlg.ShowModal()
+                tmp = dlg.GetValue()
+                if tmp in ["red", "blue", "green", "yellow"]:
+                    self.game.wild_color = tmp
                 print('wildcard color choice is',self.game.wild_color)
                 for i in range(4):
                     self.game.player2.draw()
