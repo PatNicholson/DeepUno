@@ -8,6 +8,7 @@ import random
 class Control(Player):
     def __init__(self, game, name):
         Player.__init__(self,game,name)
+        self.colors = ["red", "blue", "green", "yellow"]
 
     def discard_or_draw(self):
         if not self.possible_card():
@@ -15,10 +16,14 @@ class Control(Player):
         return 0
 
     def play(self):
-        if discard_or_draw:
-            return self.draw()
+        if self.discard_or_draw():
+            return [1,self.draw(),None]
         else:
+            wild_color = None
             possible_discards = self.all_possible_cards()
-            i = random.randint(0,len(possible_discards))
+            i = random.randint(0,len(possible_discards)-1)
             discard_card = possible_discards[i]
-            return self.discard(discard_card)
+            if discard_card.flag >= 4: #if wild, randomly select new color
+                i = random.randint(0,3)
+                wild_color = self.colors[i]
+            return [0,self.discard(discard_card),wild_color]
