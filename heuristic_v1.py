@@ -1,13 +1,18 @@
 """
-Control AI. Plays randomly.
+Heuristic AI. Plays randomly.
 """
 
 from objects import *
 import random
 
-class Control(Player):
+random.seed()
+
+class Heuristic_v1(Player):
     def __init__(self, game, name):
         Player.__init__(self,game,name)
+
+    """Computes the value of h(n) of """
+    def h(self)
 
     def discard_or_draw(self):
         if not self.possible_card():

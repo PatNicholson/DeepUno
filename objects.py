@@ -70,7 +70,7 @@ class Player:
 
     def possible_card(self):
         for card in self.hand.cards:
-            if card.flag > 0:
+            if card.flag >= 4:
                 return True
             if card.value == self.game.recent_played_card.value:
                 return True
@@ -81,13 +81,13 @@ class Player:
     def all_possible_cards(self):
         all_possible_cards = Deck(0)
         for card in self.hand.cards:
-            if card.flag > 0:
+            if card.flag >= 4:
                 all_possible_cards.add(card)
             elif card.value == self.game.recent_played_card.value:
                 all_possible_cards.add(card)
             elif card.color == self.game.recent_played_card.color:
                 all_possible_cards.add(card)
-        return all_possible_cards
+        return all_possible_cards.cards
 
 
 """ Represents an UNO card.
