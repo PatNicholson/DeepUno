@@ -40,6 +40,13 @@ class UNO_Game:
         self.deck = new_deck
 
         self.recent_played_card = self.deck.cards.pop(0)
+        print('recently played card')
+        print(self.recent_played_card)
+        while self.recent_played_card.flag >= 4:
+            self.deck.cards = [self.deck.cards,self.recent_played_card]
+            self.recent_played_card = self.deck.cards.pop(0)
+            print('recently played card')
+            print(self.recent_played_card)
         self.discard_pile = Deck(0)
         self.discard_pile.add(self.recent_played_card)
 
@@ -98,7 +105,7 @@ class Player:
         for card in self.hand.cards:
             if card.flag >= 4:
                 return True
-            if card.value == self.game.recent_played_card.value:
+            if (card.value == self.game.recent_played_card.value) and (card.flag == 0):
                 return True
             if card.color == self.game.recent_played_card.color:
                 return True
@@ -111,7 +118,7 @@ class Player:
         for card in self.hand.cards:
             if card.flag >= 4:
                 all_possible_cards.add(card)
-            elif card.value == self.game.recent_played_card.value:
+            elif (card.value == self.game.recent_played_card.value) and (card.flag == 0):
                 all_possible_cards.add(card)
             elif card.color == self.game.recent_played_card.color:
                 all_possible_cards.add(card)
@@ -181,6 +188,12 @@ class Deck:
         return False
 
     def discard(self, card):
-        self.cards.remove(card)
+        if card in self.cards:
+            self.cards.remove(card)
+        else:
+            for c in self.cards:
+                if (c.value==card.value) and (c.flag==card.flag) and (c.color==card.color):
+                    self.cards.remove(c)
+                    break
 
 
