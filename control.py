@@ -27,3 +27,6 @@ class Control(Player):
                 i = random.randint(0,3)
                 wild_color = self.colors[i]
             return [0,self.discard(discard_card),wild_color]
+
+    def say_uno(self):
+        self.game.uno(self)

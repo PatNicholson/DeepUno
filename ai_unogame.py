@@ -13,7 +13,7 @@ def name_from_card(card):
         name += 'black_'
     else:
         name += card.color+'_'
-    
+
     if card.flag == 0:
         return card.color+'_'+str(card.value)
     elif card.flag == 1:
@@ -38,7 +38,7 @@ if len(sys.argv) > 1:
 if len(sys.argv) > 2:
     if sys.argv[2] == 'bestfirst':
         print('cannot set player 1 to bestfirst, ai not yet implemented')
-        
+
 game.turn = game.player1 #P1 gets first turn
 
 print('size of',game.player1.name,'hand is',str(len(game.player1.hand.cards)))
@@ -53,11 +53,11 @@ t = 0
 while (not game.game_over(game.turn)) and (t < 100000):
     t += 1
     [play_type,card,game.wild_color] = game.turn.play()
-    
+
     if game.game_over(game.turn):
         winner = game.turn.name
         break
-    
+
     if play_type == 0: #process effects of played card
         print(game.turn.name,'played card',name_from_card(card))
         if (card.flag == 0) or (card.flag == 4):
@@ -66,11 +66,11 @@ while (not game.game_over(game.turn)) and (t < 100000):
             next_player(game).draw()
             next_player(game).draw()
             game.turn = next_player(game)
-        elif card.flag == 4:
+        elif card.flag == 5:
             for x in range(4):
                 next_player(game).draw()
             game.turn = next_player(game)
-    else:       
+    else:
         print(game.turn.name,'drew a card')
         game.turn = next_player(game)
     print('size of',game.player1.name,'hand is',str(len(game.player1.hand.cards)))
@@ -78,6 +78,5 @@ while (not game.game_over(game.turn)) and (t < 100000):
     print('size of discard pile is',str(len(game.discard_pile.cards)))
     print('size of deck is',str(len(game.deck.cards)))
     print()
-    
+
 print(winner,'wins the game')
-    

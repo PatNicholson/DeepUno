@@ -7,6 +7,23 @@ Player: treated as an abstract or super class that each AI player will implement
 Game: represents the state of a single game (the one that is currently being
       played)
 
+Weights on cards for scoring:
+  Card : weight for score
+  0 : 0
+  1 : 1
+  2 : 2
+  3 : 3
+  4 : 4
+  5 : 5
+  6 : 6
+  7 : 7
+  8 : 8
+  9 : 9
+  skip/reverse : 10
+  draw 2 : 12
+  wild : 14
+  wild draw 4 : 16
+
 """
 
 import random
