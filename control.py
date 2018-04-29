@@ -17,7 +17,7 @@ class Control(Player):
 
     def play(self):
         if self.discard_or_draw():
-            return [1,self.draw(),None]
+            return [1,self.draw(),self.game.wild_color]
         else:
             wild_color = None
             possible_discards = self.all_possible_cards()
