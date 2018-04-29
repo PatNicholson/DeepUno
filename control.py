@@ -5,6 +5,8 @@ Control AI. Plays randomly.
 from objects import *
 import random
 
+random.seed()
+
 class Control(Player):
     def __init__(self, game, name):
         Player.__init__(self,game,name)
