@@ -1,17 +1,77 @@
 import wx, os, random, time, random
+import sys
+from objects import *
+from control import Control
 
-#NOTE: this currently just shows how the game will look, but is not attached to an actual
-#game state yet (i.e. doesn't use an instance of UNO_Game yet)
+def card_from_name(filename):
+    [color,value] = filename.split('_')
+    flag = 0
+    if color == 'black':
+        color = None
+    if value == 'reverse':
+        return Card(10,color,1)
+    elif value == 'skip':
+        return Card(10,color,2)
+    elif value == '+2':
+        return Card(10,color,3)
+    elif value == 'wildcard':
+        return Card(10,color,4)
+    elif value == '+4':
+        return Card(10,color,5)
+    else:
+        return Card(int(value),color,0)
+    
+def name_from_card(card):
+    name = ''
+    if card.color == None:
+        name += 'black_'
+    else:
+        name += card.color+'_'
+    
+    if card.flag == 0:
+        return card.color+'_'+str(card.value)
+    elif card.flag == 1:
+        return card.color+'_'+'reverse'
+    elif card.flag == 2:
+        return card.color+'_'+'skip'
+    elif card.flag == 3:
+        return card.color+'_'+'+2'
+    elif card.flag == 4:
+        return 'black_wildcard'
+    elif card.flag == 5:
+        return 'black_+4'
+    
+def playable(game,card):
+    if card.flag >= 4:
+        return True
+    if card.value == game.recent_played_card.value:
+        return True
+    if card.color == game.recent_played_card.color:
+        return True
+    if card.color == game.wild_color:
+        return True
+
 class UnoGame(wx.Frame):
-    def __init__(self):
+    def __init__(self, ai_type):
+        #set up game engine
+        self.game = UNO_Game(Deck())
+        self.game.player1 = Player(self.game,'P1')
+        self.game.player2 = Control(self.game,'P2') #control player is default
+        self.ai_type = ai_type
+        if self.ai_type == 'bestfirst':
+            print('this ai not yet implemented')
+        
+        #set up frame
         wx.Frame.__init__(self, None, title='Uno')
         self.SetSize((900,700))
         self.Move((50,25))
         self.panel1 = wx.Panel(self)
         
-        #replace later with randomly generated first hand & top card
-        p1hand = ['blue_0','green_2','green_3','green_5','red_8','black_wildcard','blue_reverse']
-        discard = 'red_6'
+        #fill player 1's hand and top discard card
+        p1hand = []
+        for c in self.game.player1.hand.cards:
+            p1hand.append(name_from_card(c))
+        discard = name_from_card(self.game.discard_pile.cards[0])
         
         #create player 1's hand and give name of file name
         self.P1Cards =[]
@@ -88,28 +148,56 @@ class UnoGame(wx.Frame):
         psz = popup.GetSize()
         popup.SetPosition(wx.Point(pos[0]+0.5*sz2[0]-0.5*psz[0],pos[1]+0.15*sz2[1]))
         popup.Popup()
-    
-    def draw(self, event):
-        print("drawing card")
-        drawn_card = "red_+2"
+        
+    def dialog_popup_win(self,msg):
+        popup = wx.PopupTransientWindow(self,wx.SIMPLE_BORDER)
+        popup.SetBackgroundColour(wx.WHITE)
+        text = wx.StaticText(popup, label=msg)
+        text.SetFont(wx.Font(18, wx.ROMAN, wx.NORMAL, wx.BOLD))
+        sz = text.GetBestSize()
+        dlg = wx.TextEntryDialog(parent, message, defaultValue=default_value)
+        dlg.ShowModal()
+        result = dlg.GetValue()
+        popup.SetSize( (sz.width, sz.height))
+        pos = self.ClientToScreen( (0,0) )
+        sz2 =  self.GetSize()
+        psz = popup.GetSize()
+        popup.SetPosition(wx.Point(pos[0]+0.5*sz2[0]-0.5*psz[0],pos[1]+0.15*sz2[1]))
+        popup.Popup()
+        
+    def draw_helper(self,card_drawn):
+        drawn_card = name_from_card(card_drawn)
         card_png = './images/'+drawn_card+'.png'
         card = wx.Image(card_png,wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        if self.P1HandSize < len(self.P1Cards): #add check for if none of their cards can be played
+        if self.P1HandSize < len(self.P1Cards):
             self.P1Cards[self.P1HandSize].SetBitmap(card)
             self.P1Cards[self.P1HandSize].SetName(drawn_card)
             self.P1Cards[self.P1HandSize].Show()
             self.P1HandSize += 1
         else:
-            self.popup_win("You have a playable card")
-            
+            self.popup_win("too many cards")
+    
+    def draw(self, event):
+        if self.game.player1.possible_card():
+            print('cannot draw, you can play a card')
+            return
+        print("drawing card")
+        card_drawn = self.game.player1.draw()
+        self.draw_helper(card_drawn)   
         self.opp_play()
     
     def play(self, event):
         
         #get card clicked on, hide corresponding card image
         newCard = event.GetEventObject()
-        print("playing card " + newCard.GetName())
-        if newCard.IsShown(): #also should check if it's a legal play
+        card_played = card_from_name(newCard.GetName())
+        
+        if not playable(self.game,card_played):
+            print('cannot play that card')
+            return
+        if newCard.IsShown():
+            print("playing card " + newCard.GetName())
+            self.game.player1.discard(card_played)
             #add to discard
             self.discard.SetBitmap(newCard.GetBitmap())
             self.discard.SetName(newCard.GetName())
@@ -121,18 +209,37 @@ class UnoGame(wx.Frame):
             self.P1Cards[self.P1HandSize-1].Hide()
             self.P1HandSize -= 1
             
+            self.game.wild_color = None
+            #handle special cards
+            if card_played.flag == 3: #draw 2
+                self.game.player2.draw()
+                self.game.player2.draw()
+                self.P2Cards[self.P2HandSize].Show()
+                self.P2Cards[self.P2HandSize+1].Show()
+                self.P2HandSize += 2
+            elif card_played.flag == 4: #wild card (change later to add color selection)
+                self.game.wild_color = 'blue'
+                print('wildcard color choice is',self.game.wild_color)
+            elif card_played.flag == 5: #wild draw 4 (change later to add color selection)
+                self.game.wild_color = 'blue'
+                print('wildcard color choice is',self.game.wild_color)
+                for i in range(4):
+                    self.game.player2.draw()
+                    self.P2Cards[self.P2HandSize].Show()
+                    self.P2HandSize += 1
+            
             if self.P1HandSize == 0:
                 self.end_game(1)
-            else:
+            elif (card_played.flag == 0) or (card_played.flag >= 3):
                 self.opp_play()
         
     def opp_play(self):
-        #opponent randomly draws a card or plays a card (change when we have actual AI player)
         print('opponent playing')
+        [play_type,card,self.game.wild_color] = self.game.player2.play()
         msg = "Player 2 draws a card"
-        if random.random() > 0.4:
-            print("played card")
-            played_card = "green_4" #replace with actual card selected by AI
+        if play_type == 0:
+            played_card = name_from_card(card)
+            print("played card",played_card)
             msg = "Player 2 plays a " + played_card
             #add to discard
             self.discard.SetBitmap(wx.Image('./images/'+played_card+'.png',wx.BITMAP_TYPE_ANY).ConvertToBitmap())
@@ -140,14 +247,30 @@ class UnoGame(wx.Frame):
             
             self.P2Cards[self.P2HandSize-1].Hide()
             self.P2HandSize -= 1
+            
+            if card.flag >= 4:
+                msg += " with color " + self.game.wild_color
+            
+            if card.flag == 3:
+                card_drawn = self.game.player1.draw()
+                self.draw_helper(card_drawn)
+                card_drawn = self.game.player1.draw()
+                self.draw_helper(card_drawn)
+            elif card.flag == 5:
+                for i in range(4):
+                    card_drawn = self.game.player1.draw()
+                    self.draw_helper(card_drawn)
+            
+            if self.P2HandSize == 0:
+                self.end_game(0)
+            elif (card.flag == 1) or (card.flag == 2):
+                self.opp_play()
+            else:
+                self.popup_win(msg)
         else:
             print("drew card")
             self.P2Cards[self.P2HandSize].Show()
             self.P2HandSize += 1
-        
-        if self.P2HandSize == 0:
-            self.end_game(0)
-        else:
             self.popup_win(msg)
         
     def end_game(self,winner):
@@ -157,9 +280,19 @@ class UnoGame(wx.Frame):
             self.popup_win("You lose")
         #reset game (new game)
         
-        #replace later with randomly generated first hand & top card
-        p1hand = ['blue_0','green_2','green_3','green_5','red_8','black_wildcard','blue_reverse']
-        discard = 'blue_skip'
+        #Restart:
+        #set up game engine
+        self.game = UNO_Game(Deck())
+        self.game.player1 = Player(self.game,'P1')
+        self.game.player2 = Control(self.game,'P2') #control player is default
+        if self.ai_type == 'bestfirst':
+            print('this ai not yet implemented')
+            
+        #fill player 1's hand and top discard card
+        p1hand = []
+        for c in self.game.player1.hand.cards:
+            p1hand.append(name_from_card(c))
+        discard = name_from_card(self.game.discard_pile.cards[0])
         
         #create player 1's hand
         self.P1HandSize = 7
@@ -180,5 +313,5 @@ class UnoGame(wx.Frame):
     
 if __name__ == '__main__':
     app = wx.App(False)
-    frame = UnoGame()
+    frame = UnoGame(sys.argv[1])
     app.MainLoop()

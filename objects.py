@@ -42,9 +42,11 @@ class UNO_Game:
         self.recent_played_card = self.deck.cards.pop(0)
         print('recently played card')
         print(self.recent_played_card)
+        i = 1
         while self.recent_played_card.flag >= 4:
-            self.deck.cards = [self.deck.cards,self.recent_played_card]
-            self.recent_played_card = self.deck.cards.pop(0)
+            self.deck.cards.add(self.recent_played_card)
+            self.recent_played_card = self.deck.cards.pop(i)
+            i += 1
             print('recently played card')
             print(self.recent_played_card)
         self.discard_pile = Deck(0)
@@ -103,7 +105,9 @@ class Player:
 
     def possible_card(self):
         for card in self.hand.cards:
-            if card.flag >= 4:
+            if (card.flag >= 4):
+                return True
+            if (card.flag >= 1) and (card.flag == self.game.recent_played_card.flag):
                 return True
             if (card.value == self.game.recent_played_card.value) and (card.flag == 0):
                 return True
@@ -116,7 +120,9 @@ class Player:
     def all_possible_cards(self):
         all_possible_cards = Deck(0)
         for card in self.hand.cards:
-            if card.flag >= 4:
+            if (card.flag >= 4):
+                all_possible_cards.add(card)
+            elif (card.flag >= 1) and (card.flag == self.game.recent_played_card.flag):
                 all_possible_cards.add(card)
             elif (card.value == self.game.recent_played_card.value) and (card.flag == 0):
                 all_possible_cards.add(card)
