@@ -22,8 +22,11 @@ class UNO_Game:
 
         self.deck = new_deck
 
-        self.recent_played_card = self.deck.pop(0)
+        self.recent_played_card = self.deck.cards.pop(0)
         self.discard_pile = Deck(0)
+        self.discard_pile.add(self.recent_played_card)
+        
+        self.wild_color = None
 
     def uno(self,player):
         if player.hand.size_of_deck == 1:
@@ -31,7 +34,7 @@ class UNO_Game:
         return False
 
     def game_over(self,player):
-        if player.hand.size_of_deck == 0:
+        if len(player.hand.cards) == 0:
             return True
         return False
 
@@ -49,10 +52,11 @@ class Player:
         card_drawn = self.game.deck.draw()
         self.hand.add(card_drawn)
         if self.game.deck.empty():
-            recent_played_card = self.game.discard_pile.draw()
-            self.game.deck = self.game.discard_pile.shuffle()
+            self.game.recent_played_card = self.game.discard_pile.draw()
+            self.game.discard_pile.shuffle()
+            self.game.deck = self.game.discard_pile
             self.game.discard_pile = Deck(0)
-            self.game.discard_pile.add(recent_played_card)
+            self.game.discard_pile.add(self.game.recent_played_card)
         return card_drawn
 
     def discard(self, card):
@@ -64,30 +68,39 @@ class Player:
     """ 0 if discard, 1 if draw"""
     def discard_or_draw(self):
         raise NotImplementedError("discard_or_draw not implemented")
-
+    
+    """ returns 3 values:
+    - 0 if discard, 1 if draw
+    - the discarded or drawn card
+    - the chosen color if a wildcard is played, 'None' otherwise
+    """
     def play(self):
         raise NotImplementedError("play not implemented")
 
     def possible_card(self):
         for card in self.hand.cards:
-            if card.flag > 0:
+            if card.flag >= 4:
                 return True
             if card.value == self.game.recent_played_card.value:
                 return True
             if card.color == self.game.recent_played_card.color:
+                return True
+            if card.color == self.game.wild_color:
                 return True
         return False
 
     def all_possible_cards(self):
         all_possible_cards = Deck(0)
         for card in self.hand.cards:
-            if card.flag > 0:
+            if card.flag >= 4:
                 all_possible_cards.add(card)
             elif card.value == self.game.recent_played_card.value:
                 all_possible_cards.add(card)
             elif card.color == self.game.recent_played_card.color:
                 all_possible_cards.add(card)
-        return all_possible_cards
+            elif card.color == self.game.wild_color:
+                all_possible_cards.add(card)
+        return all_possible_cards.cards
 
 
 """ Represents an UNO card.
@@ -140,13 +153,13 @@ class Deck:
         return len(self.cards)
 
     def draw(self):
-        self.cards.pop(0)
+        return self.cards.pop(0)
 
     def add(self,card):
         self.cards = [card] + self.cards
 
     def empty(self):
-        if self.size_of_deck == 0:
+        if len(self.cards) == 0:
             return True
         return False
 
