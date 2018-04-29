@@ -1,6 +1,7 @@
 import sys
 from objects import *
 from control import Control
+from heuristic_v1 import Heuristic_v1
 
 def next_player(game):
     if game.turn == game.player1:
