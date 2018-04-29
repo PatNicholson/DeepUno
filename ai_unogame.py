@@ -2,6 +2,7 @@ import sys
 from objects import *
 from control import Control
 from heuristic_v1 import Heuristic_v1
+from heuristic_v2 import Heuristic_v2
 
 def next_player(game):
     if game.turn == game.player1:
@@ -31,7 +32,7 @@ def name_from_card(card):
 game = UNO_Game(Deck())
 #default is two control players
 game.player1 = Control(game,'P1')
-game.player2 = Control(game,'P2')
+game.player2 = Heuristic_v2(game,'P2')
 #options for different kinds of AIs to use
 if len(sys.argv) > 1:
     if sys.argv[1] == 'bestfirst':
