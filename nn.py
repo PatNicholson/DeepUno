@@ -1,9 +1,6 @@
 """
 Neural network AI
 """
-from keras.models import Sequential
-from keras.layers.core import Dense, Activation
-from keras.optimizers import RMSprop
 import numpy as np
 from objects import *
 import random
@@ -55,7 +52,7 @@ class simple_nn(Player):
 
             if discard_card.flag >= 4: #if wild, randomly select new color
                 wild_color = self.select_wild_color()
-                
+
             if self.training:
                 self.model.fit(hand_weights, probs, nb_epoch=1, verbose=0)
 

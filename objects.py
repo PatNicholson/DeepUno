@@ -40,15 +40,15 @@ class UNO_Game:
         self.deck = new_deck
 
         self.recent_played_card = self.deck.cards.pop(0)
-        print('recently played card')
-        print(self.recent_played_card)
+        #print('recently played card')
+        #print(self.recent_played_card)
         i = 1
         while self.recent_played_card.flag >= 4:
             self.deck.add(self.recent_played_card)
             self.recent_played_card = self.deck.cards.pop(i)
             i += 1
-            print('recently played card')
-            print(self.recent_played_card)
+            #print('recently played card')
+            #print(self.recent_played_card)
         self.discard_pile = Deck(0)
         self.discard_pile.add(self.recent_played_card)
 
@@ -176,23 +176,30 @@ class Deck:
                 self.cards.append(Card(10,None,4))
                 self.cards.append(Card(10,None,5))
 
-            for ind, card in enumerate(self.cards):
-                card.index = ind
-
             self.shuffle()
-            
-        self.weights = np.zeros(len(self.cards))
+
+        for ind, card in enumerate(self.cards):
+            card.index = ind
+
+        self.weights = self.set_weights()
+
+    def set_weights(self):
+    # set the weights for the cards in deck based on the score 
+    # index of weights corresponds to the 
+        weights = np.zeros(len(self.cards))
         for c in self.cards:
             if c.flag == 5:
-                self.weights[c.index] = 16
+                weights[c.index] = 16
             elif c.flag == 4:
-                self.weights[c.index] = 14
+                weights[c.index] = 14
             elif c.flag == 3:
-                self.weights[c.index] = 12
+                weights[c.index] = 12
             elif c.flag == 1 or c.flag == 2:
-                self.weights[c.index] = 10
+                weights[c.index] = 10
             elif c.flag == 0:
-                self.weights[c.index] = c.value
+                weights[c.index] = c.value
+        return weights 
+
     def get_weights(self):
         return self.weights
                 
