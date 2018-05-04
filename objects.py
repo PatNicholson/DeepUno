@@ -25,7 +25,7 @@ Weights on cards for scoring:
   wild draw 4 : 16
 
 """
-
+import numpy as np
 import random
 
 random.seed()
@@ -151,6 +151,7 @@ class Card:
         self.value = value
         self.color = color
         self.flag = flag
+        self.index = None
 
 """Represents a list of cards. The first card in the list represents
 the top of the deck, or the card that can be drawn"""
@@ -174,8 +175,27 @@ class Deck:
             for i in range(4):
                 self.cards.append(Card(10,None,4))
                 self.cards.append(Card(10,None,5))
-            self.shuffle()
 
+            for ind, card in enumerate(self.cards):
+                card.index = ind
+
+            self.shuffle()
+            
+        self.weights = np.zeros(len(self.cards))
+        for c in self.cards:
+            if c.flag == 5:
+                self.weights[c.index] = 16
+            elif c.flag == 4:
+                self.weights[c.index] = 14
+            elif c.flag == 3:
+                self.weights[c.index] = 12
+            elif c.flag == 1 or c.flag == 2:
+                self.weights[c.index] = 10
+            elif c.flag == 0:
+                self.weights[c.index] = c.value
+    def get_weights(self):
+        return self.weights
+                
     def shuffle(self):
         random.shuffle(self.cards)
 
@@ -201,5 +221,5 @@ class Deck:
                 if (c.value==card.value) and (c.flag==card.flag) and (c.color==card.color):
                     self.cards.remove(c)
                     break
-
+Deck()
 
