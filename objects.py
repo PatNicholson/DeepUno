@@ -153,6 +153,21 @@ class Card:
         self.flag = flag
         self.index = None
 
+    def __eq__(self, other):
+        if (self.value == other.value) and (self.color == other.color) and (self.flag == other.flag):
+            return True
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+    
+    def __str__(self):
+        if self.color is not None:
+            return 'Card(' + str(self.value) + ',' + self.color + ',' + str(self.flag) + ')'
+        else:
+            return 'Card(' + str(self.value) + ',wild,' + str(self.flag) + ')'
+
 """Represents a list of cards. The first card in the list represents
 the top of the deck, or the card that can be drawn"""
 class Deck:
