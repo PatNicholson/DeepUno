@@ -17,14 +17,13 @@ from keras.layers.merge import concatenate
 
 random.seed()
 
-class reinforce_nn(Player):
+class reinforce_nn_fi(Player):
     def __init__(self, game, name, model = None):
         Player.__init__(self,game,name)
         self.colors = ["red", "blue", "green", "yellow",None]
         self.color_counts = [0]*5
         self.value_counts = [0]*11
         self.flag_counts = [0]*6
-        self.discard_len = 1000000 #ensure totals are updated at first play
         self.model = model
         self.pastplays = []
 
@@ -44,18 +43,8 @@ class reinforce_nn(Player):
         self.pastplays = []
 
     def play(self):
-        #update counts if opponent has discarded cards or discards were added back to deck
-        diff = len(self.game.discard_pile.cards) - self.discard_len
-        if diff > 0: #opponent played cards
-            for i in range(diff):
-                discarded = self.game.discard_pile.cards[i]
-                color_idx = self.colors.index(discarded.color)
-                self.color_counts[color_idx] -= 1
-                self.value_counts[discarded.value] -= 1
-                self.flag_counts[discarded.flag] -= 1
-        elif diff < 0: #first play, or deck reshuffled
-            self.update_totals()
-        self.discard_len = len(self.game.discard_pile.cards) 
+        #update counts for opponent's hand
+        self.update_totals()
         
         if self.discard_or_draw():
             drawn_card = self.draw()
@@ -68,7 +57,6 @@ class reinforce_nn(Player):
             possible_discards = self.all_possible_cards()
             i, wild_color, prob = self.select_discard(possible_discards)
             discard_card = possible_discards[i]
-            self.discard_len += 1
             return [0,self.discard(discard_card),wild_color]
         
     def select_discard(self,possible_discards):
@@ -134,12 +122,7 @@ class reinforce_nn(Player):
         self.value_counts = [0]*11
         self.flag_counts = [0]*6
         
-        #accumulate counts of cards we haven't seen
-        for i in range(len(self.game.deck.cards)):
-            color_idx = self.colors.index(self.game.deck.cards[i].color)
-            self.color_counts[color_idx] += 1
-            self.value_counts[self.game.deck.cards[i].value] += 1
-            self.flag_counts[self.game.deck.cards[i].flag] += 1
+        #accumulate counts of cards in opponent's hand
         opp_player = self.game.player2
         if opp_player.name == self.name:
             opp_player = self.game.player1

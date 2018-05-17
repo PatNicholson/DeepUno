@@ -5,14 +5,23 @@ Train the neural network by having it play against itself
 import sys
 from objects import *
 from reinforce_nn import reinforce_nn
+from reinforce_nn_fullinfo import reinforce_nn_fi
 from control import Control
+from heuristic_v1 import Heuristic_v1
+from heuristic_v2 import Heuristic_v2
+
+import numpy as np
+np.random.seed(1337) # for reproducibility
 
 from keras.layers import Input
 from keras.models import Sequential, model_from_json, Model
 from keras.layers.core import Dense, Activation, Dropout
 from keras.layers import Dense, Dropout, Flatten, concatenate
 from keras.optimizers import RMSprop, SGD
-import numpy as np
+
+
+import random
+random.seed()
 
 
 
@@ -62,29 +71,65 @@ rms = RMSprop()
 model.compile(loss='mse', optimizer=rms)
 """
 
+training = False
+
 #model based on one layer
+#model = Sequential()
+#model.add(Dense(20, input_shape=(67,)))
+#model.add(Activation('relu'))
+#model.add(Dense(1))
+#model.add(Activation('linear'))
+#rms = RMSprop()
+#model.compile(loss='mse', optimizer=rms)
+#if not training:
+#    model.load_weights('model_reinforce.h5')
+
+#model based on two layers
 model = Sequential()
-model.add(Dense(20, input_shape=(67,)))
+model.add(Dense(32, input_shape=(67,)))
+model.add(Activation('relu'))
+model.add(Dense(16))
 model.add(Activation('relu'))
 model.add(Dense(1))
 model.add(Activation('linear'))
 rms = RMSprop()
 model.compile(loss='mse', optimizer=rms)
-
+if not training:
+    model.load_weights('model_reinforce_v2_fullinfo.h5')
 
 def next_player(game):
     if game.turn == game.player1:
         return game.player2
     return game.player1
 
-#training the model
+def score(hand):
+    s = 0
+    for c in hand:
+        if c.flag == 0:
+            s += c.value
+        elif c.flag >= 1 and c.flag <= 3:
+            s += 20
+        elif c.flag >= 4:
+            s += 50
+    return s
+
+
+#training or testing the model
+
 wins = 0
 total = 0
-for i in range(10000):
+P1_turns = 0
+P2_turns = 0
+P1_score = 0
+P2_score = 0
+output = ''
+rounds = 500
+
+for i in range(rounds):
     game = UNO_Game(Deck())
     #default is two control players
     game.player1 = reinforce_nn(game,'P1', model)
-    game.player2 = Control(game,'P2')
+    game.player2 = Heuristic_v2(game,'P2')
 
     game.turn = game.player1 #P1 gets first turn
 
@@ -115,20 +160,45 @@ for i in range(10000):
             game.turn = next_player(game)
     
     if winner == 'P1':
-        game.player1.train(1)
+        if training:
+            game.player1.train(1)
         wins += 1
+        P1_turns += t
+        P1_score += score(game.player2.hand.cards)
     else:
-        game.player1.train(0)
+        if training:
+            game.player1.train(0)
+        P2_turns += t
+        P2_score += score(game.player1.hand.cards)
     total += 1
+    if training and (i%200 == 199):
+        print('round',i)
+        print(wins/float(total))
+        print(P1_turns/float(wins))
+        print(P2_turns/float(200-wins))
+        output += str(i) + ',' + str(wins/float(total)) + '\n'
+        wins = 0
+        total = 0
+        P1_turns = 0
+        P2_turns = 0
+        
+if not training:
     print(wins/float(total))
+    print(P1_turns/float(wins))
+    print(P2_turns/float(rounds-wins))
+    print(P1_score/float(wins))
+    print(P2_score/float(rounds-wins))
+else:
+    # serialize model to JSON
+    model_json = model.to_json()
+    with open("model_reinforce_v2.json", "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    model.save_weights("model_reinforce_v2.h5")
+    print("Saved model to disk")
 
-# serialize model to JSON
-#model_json = model.to_json()
-#with open("model.json", "w") as json_file:
-#    json_file.write(model_json)
-# serialize weights to HDF5
-#model.save_weights("model.h5")
-#print("Saved model to disk")
+    with open('nn_training_v2.csv','w') as f:
+        f.write(output)
 
 
 
