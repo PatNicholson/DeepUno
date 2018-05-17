@@ -6,17 +6,66 @@ import sys
 from objects import *
 from nn import simple_nn
 
-from keras.models import Sequential, model_from_json
-from keras.layers.core import Dense, Activation
-from keras.optimizers import RMSprop
+from keras.layers import Input
+from keras.models import Sequential, model_from_json, Model
+from keras.layers.core import Dense, Activation, Dropout
+from keras.layers import Dense, Dropout, Flatten, concatenate
+from keras.optimizers import RMSprop, SGD
 import numpy as np
 
+
+
+# model with multiple inputs 
+# WIP
+"""
+sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+
+hand = Input(shape=(4,), name = "hand_cards")
+hand_size = Input(shape=(1,), name = "hand_size")
+deck_size = Input(shape=(1,), name = "deck_size")
+opponent_hand = Input(shape=(1,), name = "opponent_hand")
+top_discard = Input(shape=(4,), name = "top_discard")
+
+
+hidden11 = Dense(108, activation='relu', input_dim=(4,))(hand)
+dropout11 = Dropout(0.5)(hidden11)
+hidden12 = Dense(108, activation='relu')(hand)
+dropout11 = Dropout(0.5)(hidden12)
+#flat1 = Flatten()(dropout11)
+
+hand_size_input = Dense(1, activation='relu', input_dim=(1,))(opponent_hand)
+
+# merge input models
+merge = concatenate([dropout11, hand_size_input])
+
+# interpretation model
+hidden_all1 = Dense(108, activation='relu')(merge)
+hidden_all2 = Dense(108, activation='relu')(hidden_all1)
+output = Dense(1, activation='sigmoid')(hidden_all2)
+model = Model(inputs=[hand, hand_size], outputs=output)
+model.compile(loss='categorical_crossentropy',
+              optimizer=sgd,
+              metrics=['accuracy'])
+"""
+
+"""
+#original model
 model = Sequential()
-model.add(Dense(108, init='lecun_uniform', input_shape=(1,)))
+model.add(Dense(1, init='lecun_uniform', input_shape=(4,)))
 model.add(Activation('relu'))
-model.add(Dense(108 * 2, init='lecun_uniform'))
+model.add(Dense(108, init='lecun_uniform'))
 model.add(Activation('relu'))
 model.add(Dense(1, init='lecun_uniform'))
+model.add(Activation('linear'))
+rms = RMSprop()
+model.compile(loss='mse', optimizer=rms)
+"""
+
+#model based on one layer
+model = Sequential()
+model.add(Dense(20, input_shape=(1,)))
+model.add(Activation('relu'))
+model.add(Dense(1))
 model.add(Activation('linear'))
 rms = RMSprop()
 model.compile(loss='mse', optimizer=rms)
@@ -28,7 +77,7 @@ def next_player(game):
     return game.player1
 
 #training the model
-for i in range(1000):
+for i in range(1):
     game = UNO_Game(Deck())
     #default is two control players
     game.player1 = simple_nn(game,'P1', model, training = True)
@@ -46,6 +95,7 @@ for i in range(1000):
         if game.game_over(game.turn):
             winner = game.turn.name
             model = game.turn.model
+            #print(winner)
             break
 
         if play_type == 0: #process effects of played card

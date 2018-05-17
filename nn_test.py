@@ -33,7 +33,7 @@ for i in range(100):
 	game = UNO_Game(Deck())
 	#default is two control players
 	game.player1 = Heuristic_v2(game,'P1')
-	game.player2 = simple_nn(game,'P2', model, training = True)
+	game.player2 = simple_nn(game,'P2', model, training = False)
 
 	game.turn = game.player1 #P1 gets first turn
 
