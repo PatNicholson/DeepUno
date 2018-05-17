@@ -8,7 +8,7 @@ from minmax import *
 
 random.seed()
 
-class TreeSearchPlayer(Player):
+class tree_search_player(Player):
     def __init__(self, game, name):
         Player.__init__(self,game,name)
         self.colors = ["red", "blue", "green", "yellow"]
