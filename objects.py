@@ -25,7 +25,7 @@ Weights on cards for scoring:
   wild draw 4 : 16
 
 """
-
+import numpy as np
 import random
 
 random.seed()
@@ -40,15 +40,15 @@ class UNO_Game:
         self.deck = new_deck
 
         self.recent_played_card = self.deck.cards.pop(0)
-        print('recently played card')
-        print(self.recent_played_card)
+        #print('recently played card')
+        #print(self.recent_played_card)
         i = 1
         while self.recent_played_card.flag >= 4:
             self.deck.add(self.recent_played_card)
             self.recent_played_card = self.deck.cards.pop(i)
             i += 1
-            print('recently played card')
-            print(self.recent_played_card)
+            #print('recently played card')
+            #print(self.recent_played_card)
         self.discard_pile = Deck(0)
         self.discard_pile.add(self.recent_played_card)
 
@@ -151,6 +151,22 @@ class Card:
         self.value = value
         self.color = color
         self.flag = flag
+        self.index = None
+
+    def __eq__(self, other):
+        if (self.value == other.value) and (self.color == other.color) and (self.flag == other.flag):
+            return True
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+    
+    def __str__(self):
+        if self.color is not None:
+            return 'Card(' + str(self.value) + ',' + self.color + ',' + str(self.flag) + ')'
+        else:
+            return 'Card(' + str(self.value) + ',wild,' + str(self.flag) + ')'
 
 """Represents a list of cards. The first card in the list represents
 the top of the deck, or the card that can be drawn"""
@@ -174,8 +190,34 @@ class Deck:
             for i in range(4):
                 self.cards.append(Card(10,None,4))
                 self.cards.append(Card(10,None,5))
+
             self.shuffle()
 
+        for ind, card in enumerate(self.cards):
+            card.index = ind
+
+        self.weights = self.set_weights()
+
+    def set_weights(self):
+    # set the weights for the cards in deck based on the score 
+    # index of weights corresponds to the 
+        weights = np.zeros(len(self.cards))
+        for c in self.cards:
+            if c.flag == 5:
+                weights[c.index] = 16
+            elif c.flag == 4:
+                weights[c.index] = 14
+            elif c.flag == 3:
+                weights[c.index] = 12
+            elif c.flag == 1 or c.flag == 2:
+                weights[c.index] = 10
+            elif c.flag == 0:
+                weights[c.index] = c.value
+        return weights 
+
+    def get_weights(self):
+        return self.weights
+                
     def shuffle(self):
         random.shuffle(self.cards)
 
@@ -201,5 +243,5 @@ class Deck:
                 if (c.value==card.value) and (c.flag==card.flag) and (c.color==card.color):
                     self.cards.remove(c)
                     break
-
+Deck()
 

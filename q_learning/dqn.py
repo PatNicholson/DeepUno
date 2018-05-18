@@ -82,7 +82,7 @@ class Dqn_player(Qplayer):
         df = pd.DataFrame(index = index, columns = ['draw', 'discard'])
 
         for ind in index:
-            outcome = self._model.predict([np.array([ind])], batch_size=1)
+            outcome = self.model.predict([np.array([ind])], batch_size=1)
             df.loc[ind, 'draw'] = outcome[0][0]
             df.loc[ind, 'discard'] = outcome[0][1]
 
