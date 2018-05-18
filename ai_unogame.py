@@ -3,6 +3,8 @@ from objects import *
 from control import Control
 from heuristic_v1 import Heuristic_v1
 from heuristic_v2 import Heuristic_v2
+from adversarial import Adversarial
+from combination import Combination
 
 def next_player(game):
     if game.turn == game.player1:
@@ -31,8 +33,8 @@ def name_from_card(card):
 
 game = UNO_Game(Deck())
 #default is two control players
-game.player1 = Control(game,'P1')
-game.player2 = Heuristic_v2(game,'P2')
+game.player1 = Heuristic_v1(game,'P1')
+game.player2 = Combination(game,'P2')
 #options for different kinds of AIs to use
 if len(sys.argv) > 1:
     if sys.argv[1] == 'bestfirst':
@@ -51,6 +53,7 @@ print('------------------------\n')
 
 #game loop
 winner = None
+score = 0
 t = 0
 while (not game.game_over(game.turn)) and (t < 100000):
     t += 1
@@ -58,6 +61,24 @@ while (not game.game_over(game.turn)) and (t < 100000):
 
     if game.game_over(game.turn):
         winner = game.turn.name
+        if winner == game.player1.name:
+            for c in game.player2.hand.cards:
+                if c.flag == 0:
+                    score += c.value
+                elif c.flag >= 1 and c.flag <= 3:
+                    score += 20
+                else:
+                    score += 50
+
+        if winner == game.player2.name:
+            for c in game.player1.hand.cards:
+                if c.flag == 0:
+                    score += c.value
+                elif c.flag >= 1 and c.flag <= 3:
+                    score += 20
+                else:
+                    score += 50
+
         break
 
     if play_type == 0: #process effects of played card
@@ -73,12 +94,12 @@ while (not game.game_over(game.turn)) and (t < 100000):
                 next_player(game).draw()
             game.turn = next_player(game)
     else:
-        print(game.turn.name,'drew a card')
+        # print(game.turn.name,'drew a card')
         game.turn = next_player(game)
-    print('size of',game.player1.name,'hand is',str(len(game.player1.hand.cards)))
-    print('size of',game.player2.name,'hand is',str(len(game.player2.hand.cards)))
-    print('size of discard pile is',str(len(game.discard_pile.cards)))
-    print('size of deck is',str(len(game.deck.cards)))
-    print()
+    # print('size of',game.player1.name,'hand is',str(len(game.player1.hand.cards)))
+    # print('size of',game.player2.name,'hand is',str(len(game.player2.hand.cards)))
+    # print('size of discard pile is',str(len(game.discard_pile.cards)))
+    # print('size of deck is',str(len(game.deck.cards)))
+    # print()
 
 print(winner,'wins the game')
