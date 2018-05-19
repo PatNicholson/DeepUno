@@ -6,8 +6,8 @@ from objects import *
 import random
 
 class Heuristic_dt(Player):
-    def __init__(self, game, name, num_trials = 10, hand_size = 7):
-        Player.__init__(self,game,name, hand_size)
+    def __init__(self, game, name, num_trials = 10):
+        Player.__init__(self,game,name)
         self.len_opp_hand = 7
         self.num_trials = num_trials
         self.opp_color_upper = [7]*5 #keep track of what colors opp can and cannot have

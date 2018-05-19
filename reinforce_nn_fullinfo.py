@@ -32,7 +32,7 @@ class reinforce_nn_fi(Player):
             return 1
         return 0
     
-    def train(self,winner):
+    def train(self,winner): #training with 0-1 labels currently
         if len(self.pastplays) == 0:
             return
         labels = np.zeros((len(self.pastplays), 1))
@@ -105,8 +105,6 @@ class reinforce_nn_fi(Player):
             vector = hand_colors2 + hand_values2 + hand_flags2 + color_dist + \
                 value_dist + flag_dist + [len_opp_hand] + discard_colors + discard_values + discard_flags
             val = self.model.predict(np.array(vector, dtype=np.float32).reshape(1,len(vector)))
-            #print(len(vector))
-            #print(val)
             if val > best_val:
                 best_idx = i
                 best_val = val

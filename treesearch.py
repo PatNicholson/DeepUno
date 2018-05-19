@@ -9,13 +9,15 @@ from minmax import *
 random.seed()
 
 class tree_search_player(Player):
-    def __init__(self, game, name):
+    def __init__(self, game, name, ntrials=5, maxdepth=5):
         Player.__init__(self,game,name)
         self.colors = ["red", "blue", "green", "yellow"]
         self.deck_dict = [] #maps and index to a unique card type
         self.card_to_idx = {} #maps a unique card type to an index
         self.counts = [] #tracks the number of each card type not yet seen
         self.discard_len = 1000000 #ensure totals are updated at first play
+        self.ntrials = ntrials
+        self.maxdepth = maxdepth
 
     def discard_or_draw(self):
         if not self.possible_card():
@@ -66,7 +68,7 @@ class tree_search_player(Player):
             hand_copy = hand[:]
             hand_copy[self.card_to_idx[str(d)]] -= 1
             vector = hand_copy + self.counts + [len_opp_hand] + discard
-            val = min_max(self.deck_dict, len(self.deck_dict), vector, 5, wild_color, 5)
+            val = min_max(self.deck_dict, len(self.deck_dict), vector, self.ntrials, wild_color, self.maxdepth)
             if val > best_val:
                 best_idx = i
                 best_val = val

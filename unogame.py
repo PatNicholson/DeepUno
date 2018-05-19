@@ -2,6 +2,8 @@ import wx, os, random, time, random
 import sys
 from objects import *
 from control import Control
+from heuristic_decision_tree import Heuristic_dt
+from heuristic_v2 import Heuristic_v2
 
 def card_from_name(filename):
     [color,value] = filename.split('_')
@@ -56,10 +58,16 @@ class UnoGame(wx.Frame):
         #set up game engine
         self.game = UNO_Game(Deck())
         self.game.player1 = Player(self.game,'P1')
-        self.game.player2 = Control(self.game,'P2') #control player is default
         self.ai_type = ai_type
-        if self.ai_type == 'bestfirst':
-            print('this ai not yet implemented')
+        if self.ai_type == 'DT':
+            self.game.player2 = Heuristic_dt(self.game,'P2')
+            print('Playing against Decision Tree Player')
+        elif self.ai_type == 'V2':
+            self.game.player2 = Heuristic_v2(self.game,'P2')
+            print('Playing against Second Heuristic Player')
+        else:
+            self.game.player2 = Control(self.game,'P2') #control player is default
+            print('Playing against Random Player')
         
         #set up frame
         wx.Frame.__init__(self, None, title='Uno')
@@ -165,7 +173,6 @@ class UnoGame(wx.Frame):
         if self.game.player1.possible_card():
             print('cannot draw, you can play a card')
             return
-        print("drawing card")
         card_drawn = self.game.player1.draw()
         self.draw_helper(card_drawn)   
         self.opp_play()
@@ -179,7 +186,6 @@ class UnoGame(wx.Frame):
             print('cannot play that card')
             return
         if newCard.IsShown():
-            print("playing card " + newCard.GetName())
             self.game.player1.discard(card_played)
             #add to discard
             self.discard.SetBitmap(newCard.GetBitmap())
@@ -207,7 +213,6 @@ class UnoGame(wx.Frame):
                 tmp = dlg.GetValue()
                 if tmp in ["red", "blue", "green", "yellow"]:
                     self.game.wild_color = tmp
-                print('wildcard color choice is',self.game.wild_color)
             elif card_played.flag == 5: #wild draw 4 (change later to add color selection)
                 self.game.wild_color = 'blue'
                 dlg = wx.TextEntryDialog(self, 'Which color is the wildcard?')
@@ -215,7 +220,6 @@ class UnoGame(wx.Frame):
                 tmp = dlg.GetValue()
                 if tmp in ["red", "blue", "green", "yellow"]:
                     self.game.wild_color = tmp
-                print('wildcard color choice is',self.game.wild_color)
                 for i in range(4):
                     self.game.player2.draw()
                     self.P2Cards[self.P2HandSize].Show()
@@ -227,12 +231,10 @@ class UnoGame(wx.Frame):
                 self.opp_play()
         
     def opp_play(self):
-        print('opponent playing')
         [play_type,card,self.game.wild_color] = self.game.player2.play()
         msg = "Player 2 draws a card"
         if play_type == 0:
             played_card = name_from_card(card)
-            print("played card",played_card)
             msg = "Player 2 plays a " + played_card
             #add to discard
             self.discard.SetBitmap(wx.Image('./images/'+played_card+'.png',wx.BITMAP_TYPE_ANY).ConvertToBitmap())

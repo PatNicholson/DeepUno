@@ -40,21 +40,6 @@ for i in range(num_games):
     result = player1+","+player2+","+winner+","+str(turns)+","+str(score)+"\n"
     f.write(result)
 
-
-# for i in range(10):
-#     import ai_unogame as playedGame
-#     winner = playedGame.winner
-#     turns = playedGame.t
-#     score = playedGame.score
-
-#     if winner == 'P1':
-#         winner = player1
-#     elif winner == 'P2':
-#         winner = player2
-
-#     result = player1+","+player2+","+winner+","+str(turns)+","+str(score)+"\n"
-#     f.write(result)
-
 avg_p1_score = p1_score/p1_wins
 avg_p2_score = p2_score/p2_wins
 p1_percent = p1_wins/num_games * 100

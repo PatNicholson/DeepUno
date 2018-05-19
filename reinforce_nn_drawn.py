@@ -36,32 +36,10 @@ class reinforce_nn_drawn(Player):
             return 1
         return 0
     
-    def train(self,winner):
-        #if self.update_label:
-        #    opp = self.game.player2
-        #    if self.game.player2.name == self.name:
-        #        opp = self.game.player1
-        #    #self.labels[len(self.labels)-1][0] += self.h(-1,opp.hand.cards)
-        #    self.update_label = False
+    def train(self,winner): #training with 0-1 labels currently
         if len(self.pastplays) == 0:
             return
-        #print(self.labels)
-        #sum_labels = 0
-        #for i in range(len(self.labels)):
-        #    sum_labels += self.labels[i][0]
-        #print(sum_labels)
-        #print('-------------------')
-        
         np_labels = np.zeros((len(self.pastplays), 1))
-        #labels = np.empty((len(self.pastplays), 1))
-        #if winner:
-        #    for i in range(len(self.pastplays)):
-        #        labels[i] = 0.5 + 0.5*float(i)/len(self.pastplays)
-        #else:
-        #    for i in range(len(self.pastplays)):
-        #        labels[i] = 0.5 - 0.5*float(i)/len(self.pastplays)
-        
-        #np_labels = np.asarray(self.labels, dtype=np.float32)
         features = np.asarray(self.pastplays, dtype=np.float32)
         if winner:
             np_labels = np.ones((len(self.pastplays), 1))
@@ -169,23 +147,17 @@ class reinforce_nn_drawn(Player):
             
             vector = hand_colors2 + hand_values2 + hand_flags2 + compare_to_last + [drawn,num_possible] + color_dist + \
                 value_dist + flag_dist + [len_opp_hand] + discard_colors + discard_values + discard_flags
+            
+            #uncomment if you want to use length 28 vector of fewer features instead (and then adjust nn architecture as a result)
             #vector = hand_colors2 + hand_values2 + hand_flags2 + compare_to_last + [drawn,num_possible,len_opp_hand]
             val = self.model.predict(np.array(vector, dtype=np.float32).reshape(1,len(vector)))
-            #print(len(vector))
-            #print(val)
             if val > best_val:
                 best_idx = i
                 best_val = val
                 best_wild = wild_color
                 best_vector = vector
-        if self.update_label:
-            #self.labels.append([opp_hand_diff])
-            #self.labels[len(self.labels)-1][0] += self.h(-1,opp.hand.cards)
-            self.update_label = False
         if (best_val > -100000) and (len(possible_discards) > 1): #only add if player actually had to make decision
             self.pastplays.append(best_vector)
-            self.labels.append([-1*self.h(possible_discards[best_idx],self.hand.cards)])
-            self.update_label = True
         return best_idx, best_wild, best_val
     
     #updates counts of what cards the player hasn't seen in their hand or discarded  
@@ -241,25 +213,6 @@ class reinforce_nn_drawn(Player):
         best_option = (max((yellow,"yellow"),(red,"red"),(blue,"blue"),
             (green,"green")))[1]
         return best_option
-    
-    #use this only for pre-training to get similar to heuristic_v2
-    def h(self, possible_card, hand):
-        hVal = len(hand) - 1
-        newHand = hand[:]
-        if type(possible_card) != int:
-            newHand.remove(possible_card)
-        for c in newHand:
-            if c.flag == 0:
-                hVal += c.value
-            elif c.flag == 1 or c.flag == 2:
-                hVal += 10
-            elif c.flag == 3:
-                hVal += 12
-            # elif c.flag == 4:
-            #     hVal += 14
-            # elif c.flag == 5:
-            #     hVal += 16
-        return hVal
 
     def say_uno(self):
         self.game.uno(self)

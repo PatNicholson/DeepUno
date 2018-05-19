@@ -46,8 +46,7 @@ def min_max_helper(hand, opp_hand, discard_top, deck, turn, prune, wild_color, d
     elif len(hand) == 0:
         return 1
     elif (depth > maxdepth) or (len(deck.cards) <= 4):
-        #return len(opp_hand)/float(len(opp_hand)+len(hand))
-        return 0.5
+        return len(opp_hand)/float(len(opp_hand)+len(hand)) #return opp hand len over sum of both hands as heuristic
     elif turn == 1: #player's turn, aim to maximize value
         poss_card_idx = all_possible_cards(hand, discard_top, wild_color)
         if len(poss_card_idx) == 0: #have to draw a card

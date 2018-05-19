@@ -72,30 +72,30 @@ model.compile(loss='mse', optimizer=rms)
 """
 
 training = False
+nlayers = 1
 
-#model based on one layer
-#model = Sequential()
-#model.add(Dense(20, input_shape=(67,)))
-#model.add(Activation('relu'))
-#model.add(Dense(1))
-#model.add(Activation('linear'))
-#rms = RMSprop()
-#model.compile(loss='mse', optimizer=rms)
-#if not training:
-#    model.load_weights('model_reinforce.h5')
-
-#model based on two layers
-model = Sequential()
-model.add(Dense(32, input_shape=(67,)))
-model.add(Activation('relu'))
-model.add(Dense(16))
-model.add(Activation('relu'))
-model.add(Dense(1))
-model.add(Activation('linear'))
-rms = RMSprop()
-model.compile(loss='mse', optimizer=rms)
-if not training:
-    model.load_weights('model_reinforce_v2_fullinfo.h5')
+if nlayers == 1: #model based on one layer
+    model = Sequential()
+    model.add(Dense(20, input_shape=(67,)))
+    model.add(Activation('relu'))
+    model.add(Dense(1))
+    model.add(Activation('linear'))
+    rms = RMSprop()
+    model.compile(loss='mse', optimizer=rms)
+    if not training:
+        model.load_weights('model_reinforce.h5')
+else: #model based on two layers
+    model = Sequential()
+    model.add(Dense(32, input_shape=(67,)))
+    model.add(Activation('relu'))
+    model.add(Dense(16))
+    model.add(Activation('relu'))
+    model.add(Dense(1))
+    model.add(Activation('linear'))
+    rms = RMSprop()
+    model.compile(loss='mse', optimizer=rms)
+    if not training:
+        model.load_weights('model_reinforce_v2_fullinfo.h5')
 
 def next_player(game):
     if game.turn == game.player1:
@@ -127,7 +127,6 @@ rounds = 500
 
 for i in range(rounds):
     game = UNO_Game(Deck())
-    #default is two control players
     game.player1 = reinforce_nn(game,'P1', model)
     game.player2 = Heuristic_v2(game,'P2')
 
